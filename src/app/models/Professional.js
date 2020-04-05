@@ -1,10 +1,11 @@
 import Sequelize, { Model } from 'sequelize';
 import bcrypt from 'bcryptjs';
 
-class User extends Model {
+class Professional extends Model {
   static init(sequelize) {
     super.init(
       {
+        register_cod: Sequelize.STRING,
         cpf: Sequelize.STRING,
         firstname: Sequelize.STRING,
         lastname: Sequelize.STRING,
@@ -31,13 +32,12 @@ class User extends Model {
   }
 
   static associate(models) {
-    this.belongsTo(models.User, {
-      foreignKey: 'connected_id',
-      targetKey: 'id',
-      as: 'UserConnected',
+    this.belongsTo(models.Specialization, {
+      foreignKey: 'specialization_id',
+      as: 'specialization',
     });
     this.belongsTo(models.File, { foreignKey: 'avatar_id', as: 'avatar' });
   }
 }
 
-export default User;
+export default Professional;

@@ -1,6 +1,6 @@
 module.exports = {
   up: (queryInterface, Sequelize) => {
-    return queryInterface.createTable('users', {
+    return queryInterface.createTable('professionals', {
       id: {
         type: Sequelize.INTEGER,
         allowNull: false,
@@ -14,14 +14,18 @@ module.exports = {
         onDelete: 'SET NULL',
         allowNull: true,
       },
-      connected_id: {
+      specialization_id: {
         type: Sequelize.INTEGER,
-        references: { model: 'users', key: 'id' },
+        references: { model: 'specializations', key: 'id' },
         onUpdate: 'CASCADE',
         onDelete: 'SET NULL',
         allowNull: true,
       },
       cpf: {
+        type: Sequelize.STRING,
+        allowNull: false,
+      },
+      register_cod: {
         type: Sequelize.STRING,
         allowNull: false,
       },
@@ -42,7 +46,6 @@ module.exports = {
         type: Sequelize.STRING,
         allowNull: false,
       },
-
       created_at: {
         type: Sequelize.DATE,
         allowNull: false,

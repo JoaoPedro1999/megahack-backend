@@ -1,7 +1,8 @@
 import * as Yup from 'yup';
+import Professional from '../models/Professional';
 import User from '../models/User';
 
-class UserController {
+class ProfessionalController {
   async store(req, res) {
     const schema = Yup.object().shape({
       firstname: Yup.string().required(),
@@ -15,23 +16,40 @@ class UserController {
       return res.status(400).json({ error: 'Validation fails' });
     }
 
-    const userExists = await User.findOne({ where: { email: req.body.email } });
+    const userExists = await Professional.findOne({
+      where: { email: req.body.email },
+    });
+
+    const userIsPatient = await User.findOne({
+      where: { email: req.body.email },
+    });
 
     if (userExists) {
       return res.status(400).json({ error: 'User already exists.' });
     }
 
-    const { id, name, lastname, cpf, email, connected_id } = await User.create(
-      req.body
-    );
+    if (userIsPatient) {
+      return res.status(400).json({ error: 'User already exists as patient.' });
+    }
+
+    const {
+      id,
+      specialization_id,
+      register_cod,
+      cpf,
+      firstname,
+      lastname,
+      email,
+    } = await Professional.create(req.body);
 
     return res.json({
       id,
-      name,
-      lastname,
+      specialization_id,
+      register_cod,
       cpf,
+      firstname,
+      lastname,
       email,
-      connected_id,
     });
   }
 
@@ -85,4 +103,4 @@ class UserController {
   }
 }
 
-export default new UserController();
+export default new ProfessionalController();
