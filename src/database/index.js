@@ -3,10 +3,11 @@ import User from '../app/models/User';
 import File from '../app/models/File';
 import Specialization from '../app/models/Specialization';
 import Professional from '../app/models/Professional';
+import Consultation from '../app/models/Consultation';
 
 import databaseConfig from '../config/database';
 
-const models = [User, File, Specialization, Professional];
+const models = [User, File, Specialization, Professional, Consultation];
 
 class Database {
   constructor() {
