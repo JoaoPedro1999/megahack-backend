@@ -2,9 +2,8 @@ module.exports = {
   up: (queryInterface, Sequelize) => {
     return queryInterface.createTable('consultations', {
       id: {
-        type: Sequelize.INTEGER,
+        type: Sequelize.UUID,
         allowNull: false,
-        autoIncrement: true,
         primaryKey: true,
       },
       date: {
@@ -12,14 +11,14 @@ module.exports = {
         type: Sequelize.DATE,
       },
       user_id: {
-        type: Sequelize.INTEGER,
+        type: Sequelize.UUID,
         references: { model: 'users', key: 'id' },
         onUpdate: 'CASCADE',
         onDelete: 'SET NULL',
         allowNull: true,
       },
       professional_id: {
-        type: Sequelize.INTEGER,
+        type: Sequelize.UUID,
         references: { model: 'professionals', key: 'id' },
         onUpdate: 'CASCADE',
         onDelete: 'SET NULL',

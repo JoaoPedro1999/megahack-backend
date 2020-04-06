@@ -1,5 +1,6 @@
 import Sequelize, { Model } from 'sequelize';
 import bcrypt from 'bcryptjs';
+import uuid from 'uuid/v4';
 
 class Professional extends Model {
   static init(sequelize) {
@@ -18,9 +19,16 @@ class Professional extends Model {
       }
     );
 
-    this.addHook('beforeSave', async (user) => {
-      if (user.password) {
-        user.password_hash = await bcrypt.hash(user.password, 8);
+    this.addHook('beforeCreate', async (professional) => {
+      professional.id = uuid();
+    });
+
+    this.addHook('beforeSave', async (professional) => {
+      if (professional.password) {
+        professional.password_hash = await bcrypt.hash(
+          professional.password,
+          8
+        );
       }
     });
 

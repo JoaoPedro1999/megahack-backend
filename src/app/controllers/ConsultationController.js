@@ -1,10 +1,12 @@
 import * as Yup from 'yup';
-import { startOfHour, parseISO, isBefore, subHours } from 'date-fns';
+import { startOfHour, parseISO, isBefore, format, subHours } from 'date-fns';
+import pt from 'date-fns/locale/pt';
 import User from '../models/User';
 import File from '../models/File';
 import Specialization from '../models/Specialization';
 import Consultation from '../models/Consultation';
 import Professional from '../models/Professional';
+import Notification from '../schemas/Notification';
 
 class ConsultationController {
   async index(req, res) {
@@ -20,7 +22,7 @@ class ConsultationController {
         {
           model: Professional,
           as: 'professional',
-          attributes: ['id', 'firstname'],
+          attributes: ['id', 'firstname', 'lastname'],
           include: [
             {
               model: File,
@@ -42,7 +44,7 @@ class ConsultationController {
 
   async store(req, res) {
     const schema = Yup.object().shape({
-      professional_id: Yup.number().required(),
+      professional_id: Yup.string().required(),
       date: Yup.date().required(),
     });
 
@@ -52,9 +54,6 @@ class ConsultationController {
 
     const { professional_id, date } = req.body;
 
-    /**
-     * Check if provider_id is a provider
-     */
     const checkIsProfessional = await Professional.findOne({
       where: { id: professional_id },
     });
@@ -65,18 +64,12 @@ class ConsultationController {
         .json({ error: 'You can only create appointments with professional' });
     }
 
-    /**
-     * Check for past dates
-     */
     const hourStart = startOfHour(parseISO(date));
 
     if (isBefore(hourStart, new Date())) {
       return res.status(400).json({ error: 'Past dates are not permitted' });
     }
 
-    /**
-     * Check date availability
-     */
     const checkAvailability = await Consultation.findOne({
       where: {
         professional_id,
@@ -91,13 +84,51 @@ class ConsultationController {
         .json({ error: 'Consultation date is not available' });
     }
 
-    const appointment = await Consultation.create({
+    const connectorUser = await User.findOne({
+      where: {
+        id: req.userId,
+      },
+      include: [
+        {
+          model: User,
+          as: 'UserConnected',
+          attributes: ['id', 'firstname', 'lastname'],
+        },
+      ],
+    });
+
+    const consultation = await Consultation.create({
       user_id: req.userId,
       professional_id,
       date: hourStart,
     });
 
-    return res.json(appointment);
+    const formattedDate = format(
+      hourStart,
+      "'dia' dd 'de' MMMM', às' H:mm'h'",
+      { locale: pt }
+    );
+
+    const user = await User.findByPk(req.userId);
+
+    await Notification.create({
+      content: `Novo agendamento de ${user.firstname} ${user.lastname} para ${formattedDate}`,
+      user: professional_id,
+    });
+
+    if (connectorUser.dataValues.connected_id) {
+      await Notification.create({
+        content: `${user.firstname} agendou uma consulta com ${checkIsProfessional.dataValues.firstname} ${checkIsProfessional.dataValues.lastname} para o dia ${formattedDate}`,
+        user: connectorUser.dataValues.connected_id,
+      });
+    }
+
+    await Notification.create({
+      content: `Sua consulta com ${checkIsProfessional.dataValues.firstname} ${checkIsProfessional.dataValues.lastname} para o ${formattedDate}, foi confirmado!`,
+      user: req.userId,
+    });
+
+    return res.json(consultation);
   }
 
   async delete(req, res) {

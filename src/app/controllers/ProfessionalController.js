@@ -1,8 +1,38 @@
 import * as Yup from 'yup';
 import Professional from '../models/Professional';
 import User from '../models/User';
+import File from '../models/File';
+import Specialization from '../models/Specialization';
 
 class ProfessionalController {
+  async index(req, res) {
+    const providers = await Professional.findAll({
+      attributes: [
+        'id',
+        'firstname',
+        'lastname',
+        'email',
+        'avatar_id',
+        'specialization_id',
+        'register_cod',
+      ],
+      include: [
+        {
+          model: File,
+          as: 'avatar',
+          attributes: ['name', 'path', 'url'],
+        },
+        {
+          model: Specialization,
+          as: 'specialization',
+          attributes: ['description'],
+        },
+      ],
+    });
+
+    return res.json(providers);
+  }
+
   async store(req, res) {
     const schema = Yup.object().shape({
       firstname: Yup.string().required(),

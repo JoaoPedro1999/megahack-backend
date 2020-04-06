@@ -1,4 +1,5 @@
 import Sequelize, { Model } from 'sequelize';
+import uuid from 'uuid/v4';
 
 class Specialization extends Model {
   static init(sequelize) {
@@ -10,6 +11,10 @@ class Specialization extends Model {
         sequelize,
       }
     );
+
+    this.addHook('beforeCreate', async (specialization) => {
+      specialization.id = uuid();
+    });
 
     return this;
   }

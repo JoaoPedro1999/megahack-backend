@@ -2,20 +2,19 @@ module.exports = {
   up: (queryInterface, Sequelize) => {
     return queryInterface.createTable('professionals', {
       id: {
-        type: Sequelize.INTEGER,
+        type: Sequelize.UUID,
         allowNull: false,
-        autoIncrement: true,
         primaryKey: true,
       },
       avatar_id: {
-        type: Sequelize.INTEGER,
+        type: Sequelize.UUID,
         references: { model: 'files', key: 'id' },
         onUpdate: 'CASCADE',
         onDelete: 'SET NULL',
         allowNull: true,
       },
       specialization_id: {
-        type: Sequelize.INTEGER,
+        type: Sequelize.UUID,
         references: { model: 'specializations', key: 'id' },
         onUpdate: 'CASCADE',
         onDelete: 'SET NULL',

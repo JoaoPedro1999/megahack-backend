@@ -1,5 +1,6 @@
 import Sequelize, { Model } from 'sequelize';
 import { isBefore, subHours } from 'date-fns';
+import uuid from 'uuid/v4';
 
 class Consultation extends Model {
   static init(sequelize) {
@@ -24,6 +25,10 @@ class Consultation extends Model {
         sequelize,
       }
     );
+
+    this.addHook('beforeCreate', async (consultation) => {
+      consultation.id = uuid();
+    });
 
     return this;
   }
