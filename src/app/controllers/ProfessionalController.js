@@ -6,7 +6,7 @@ import Specialization from '../models/Specialization';
 
 class ProfessionalController {
   async index(req, res) {
-    const providers = await Professional.findAll({
+    const professional = await Professional.findAll({
       attributes: [
         'id',
         'firstname',
@@ -30,7 +30,7 @@ class ProfessionalController {
       ],
     });
 
-    return res.json(providers);
+    return res.json(professional);
   }
 
   async store(req, res) {
@@ -105,22 +105,35 @@ class ProfessionalController {
 
     const { email, oldPassword } = req.body;
 
-    const user = await User.findByPk(req.userId);
+    const professional = await Professional.findByPk(req.userId);
 
-    if (email !== user.email) {
-      const userExists = await User.findOne({ where: { email } });
+    if (email !== professional.email) {
+      const professionalExists = await Professional.findOne({
+        where: { email },
+      });
 
-      if (userExists) {
-        return res.status(400).json({ error: 'User already exists.' });
+      if (professionalExists) {
+        return res.status(400).json({ error: 'Professional already exists.' });
       }
     }
 
-    if (oldPassword && !(await user.checkPassword(oldPassword))) {
+    if (oldPassword && !(await professional.checkPassword(oldPassword))) {
       return res.status(401).json({ error: 'Password does not match' });
     }
 
-    const { id, firstname, lastname, connected_id } = await user.update(
-      req.body
+    await professional.update(req.body);
+
+    const { id, firstname, lastname, avatar } = await Professional.findByPk(
+      req.userId,
+      {
+        include: [
+          {
+            model: File,
+            as: 'avatar',
+            attributes: ['id', 'path', 'url'],
+          },
+        ],
+      }
     );
 
     return res.json({
@@ -128,7 +141,7 @@ class ProfessionalController {
       firstname,
       lastname,
       email,
-      connected_id,
+      avatar,
     });
   }
 }
